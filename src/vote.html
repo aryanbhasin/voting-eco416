@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Election Results</title>
+    <title>OpenVote</title>
     <!-- Bootstrap -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
   </head>
@@ -12,20 +12,29 @@
     <div class="container" style="width: 650px;">
       <div class="row">
         <div class="col-lg-12">
-          <h1 class="text-center">Election Results</h1>
+          <h1 class="text-center">OpenVote</h1>
           <hr/>
           <div id="loader">
             <p class="text-center">Loading...</p>
           </div>
           <div id="content" style="display: none;">
             <div>
-              <h3>Unlock Voter</h3>
+              <h5>Unlock Voter</h5>
               <label for="voterAddress">Voter Address</label>
               <input id="voterAddress" type="text" width="500">
               <button onClick="App.unlockVoter()" class="btn btn-dark">Unlock</button>
               <p id="voterUnlockedMessage"></p>
             </div>
+            <hr />
+            <table>
+              <tr>
+                  <td><b>Current status:&nbsp; </b></td>
+                  <td id="currentWorkflowStatusMessage"></td>
+              </tr>
+            </table>
+            <hr />
             <br/>
+            <h3>Proposals</h3>
             <table class="table">
               <thead>
                 <tr>
@@ -39,11 +48,12 @@
             </table>
             <form onSubmit="App.castVote(); return false;">
               <div class="form-group">
-                <label for="candidatesSelect">Select Candidate</label>
+                <label for="candidatesSelect">Select Proposal</label>
                 <select class="form-control" id="candidatesSelect">
                 </select>
               </div>
               <button type="submit" class="btn btn-primary">Vote</button>
+              <p id="voteConfirmationMessage"></p>
             </form>
             <hr />
             <p id="accountAddress" class="text-center"></p>

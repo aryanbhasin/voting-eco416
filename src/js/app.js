@@ -41,7 +41,6 @@ App = {
         fromBlock: 0,
         toBlock: 'latest'
       }).watch(function(error, event) {
-        console.log("votedEvent triggered", event)
         // Reload when a new vote is recorded
         App.render();
       })
@@ -74,6 +73,20 @@ App = {
           }
         })
       })
+
+    App.contracts.Election.deployed()
+      .then(instance => instance.VotingSessionStartedEvent())
+      .then(votingSessionStartedEventSubscription => {
+        votingSessionStartedEvent = votingSessionStartedEventSubscription;
+        votingSessionStartedEvent.watch((error, result) => {
+          if (!error) {
+            $("#votingSessionMessage").html("The voting session has started");
+            App.render(); // reload when voting session begins
+          } else {
+            console.log(error);
+          }
+        })
+      })
   },
 
   render: function() {
@@ -88,7 +101,7 @@ App = {
     web3.eth.getCoinbase(function(err, account) {
       if (err === null) {
         App.account = account;
-        $("#accountAddress").html("Your Account: " + account);
+        $("#accountAddress").html("logged in as: " + account);
       }
     });
 
@@ -146,15 +159,41 @@ App = {
 
   castVote: function() {
     var candidateId = $('#candidatesSelect').val();
-    App.contracts.Election.deployed().then(function(instance) {
-      return instance.vote(candidateId, { from: App.account });
-    }).then(function(result) {
-      // Wait for votes to update
-      $("#content").hide();
-      $("#loader").show();
-    }).catch(function(err) {
-      console.error(err);
-    })
+    var voterAddress = $("#voterAddress").val();
+    App.contracts.Election.deployed()
+      .then(instance => instance.isRegisteredVoter(voterAddress))
+      .then(isRegisteredVoter => {
+        if (isRegisteredVoter) {
+          return App.contracts.Election.deployed()
+            .then(instance => instance.getWorkflowStatus())
+            .then(workflowStatus => {
+              if (workflowStatus < 1) {
+                $("#voteConfirmationMessage").html("The voting session has not started yet");
+              } else  if (workflowStatus > 1) {
+                $("#voteConfirmationMessage").html("The voting session has already ended");
+              } else {
+                App.contracts.Election.deployed()
+                  .then(instance => instance.getProposalsNumber())
+                  .then(proposalsNumber => {
+                    if (proposalsNumber == 0) {
+                      $("#voteConfirmationMessage").html("There are no proposals registered for voting");
+                    } else {
+                      App.contracts.Election.deployed()
+                        .then(instance => instance.vote(candidateId, {from: App.account, gas: 200000}))
+                        .catch(e => $("#voteConfirmationMessage").html(e))
+                        .then(_ => {
+                          $("#content").hide();
+                          $("#loader").show();
+                        })
+                        .catch(e => console.log(e))
+                    }
+                  })
+              }
+            })
+        } else {
+          $("#proposalRegistrationMessage").html("You are not a registered voter")
+        }
+      })
   },
 
   unlockVoter: function() {
@@ -291,6 +330,31 @@ App = {
     }
   },
 
+  startVotingSession: function() {
+    $("#votingSessionMessage").html('');
+    var adminAddress = $("#adminAddress").val();
+
+    App.contracts.Election.deployed()
+      .then(instance => instance.isAdministrator(adminAddress))
+      .then(isAdministrator => {
+        if (isAdministrator) {
+          return App.contracts.Election.deployed()
+            .then(instance => instance.getWorkflowStatus())
+            .then(workflowStatus => {
+              if (workflowStatus > 0) {
+                $("v#otingSessionMessage").html("The voting session has already begun");
+              } else {
+                App.contracts.Election.deployed()
+                  .then(instance => instance.startVotingSession({from: App.account, gas: 200000}))
+                  .catch(e => $("#votingSessionMessage").html(e))
+              }
+            })
+        } else {
+          $("#votingSessionMessage").html("You are not logged in as an admin");
+        }
+      })
+  },
+
   refreshWorkflowStatus: function() {
     App.contracts.Election.deployed()
       .then(instance => instance.getWorkflowStatus())
@@ -298,22 +362,14 @@ App = {
         var workflowStatusDescription;
         switch (workflowStatus.toString()) {
           case '0':
-            workflowStatusDescription = "Registering Voters";
+            workflowStatusDescription = "Voting Registration Open";
             break;
           case '1':
-            workflowStatusDescription = "Proposals Registration Started";
+            workflowStatusDescription = "Voting has started";
             break; 
           case '2':
-            workflowStatusDescription = "Proposals Registration Ended";
+            workflowStatusDescription = "Voting has ended";
             break; 
-          case '3':
-            workflowStatusDescription = "Voting Session Started";
-            break; 
-          case '4':
-            workflowStatusDescription = "Voting Session Ended";
-            break; 
-          case '5':
-            workflowStatusDescription = "Votes Tallied";
             break; 
           default:
             workflowStatusDescription = "Unknown Status";

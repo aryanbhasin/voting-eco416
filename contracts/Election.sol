@@ -16,11 +16,8 @@ contract Election {
     
     enum WorkflowStatus {
         RegisteringVoters,
-        ProposalsRegistrationStarted,
-        ProposalsRegistrationEnded,
         VotingSessionStarted,
-        VotingSessionEnded,
-        VotesTallied
+        VotingSessionEnded
     }
 
     address public administrator;
@@ -43,14 +40,11 @@ contract Election {
     );
 
     event VoterRegisteredEvent (address voterAddress);
-    event ProposalsRegistrationStartedEvent ();
-    event ProposalsRegistrationEndedEvent ();
     event ProposalRegisteredEvent (
         uint proposalId
     );
     event VotingSessionStartedEvent ();
     event VotingSessionEndedEvent ();
-    event VotesTalliedEvent ();
 
     event WorkflowStatusChangeEvent (
         WorkflowStatus previousStatus,
@@ -71,26 +65,12 @@ contract Election {
         _;
     }
 
-    modifier onlyDuringProposalsRegistration() {
-        require(workflowStatus == WorkflowStatus.ProposalsRegistrationStarted, "This function can be called only when proposals registration has started");
-        _;
-    }
-    modifier onlyAfterProposalsRegistration() {
-        require(workflowStatus == WorkflowStatus.ProposalsRegistrationEnded, "This function can be called only when proposals registration has ended");
-        _;
-    }
-
     modifier onlyDuringVotingSession() {
         require(workflowStatus == WorkflowStatus.VotingSessionStarted, "This function can be called only when voting session has started");
         _;
     }
     modifier onlyAfterVotingSession() {
         require(workflowStatus == WorkflowStatus.VotingSessionEnded, "This function can be called only when voting session has ended");
-        _;
-    }
-
-    modifier onlyAfterVotesTallied() {
-        require(workflowStatus == WorkflowStatus.VotesTallied, "This function can be called only after votes have been tallied");
         _;
     }
     
@@ -104,17 +84,17 @@ contract Election {
     }
 
     function getWinningProposalId() 
-        public onlyAfterVotesTallied view returns (uint) {
+        public onlyAfterVotingSession view returns (uint) {
         return winningCandidateId;
     }
 
     function getWinningProposalDescription()
-        public onlyAfterVotesTallied view returns (string memory) {
+        public onlyAfterVotingSession view returns (string memory) {
         return candidates[winningCandidateId].name;    
     }
 
     function getWinningProposalVoteCounts()
-        public onlyAfterVotesTallied view returns (uint) {
+        public onlyAfterVotingSession view returns (uint) {
         return candidates[winningCandidateId].voteCount;
     }
 
@@ -146,29 +126,22 @@ contract Election {
         emit VoterRegisteredEvent(_voterAddress);
     }
 
-    function startProposalsRegistration()
-        public onlyAdministrator onlyDuringProposalsRegistration {
-        workflowStatus = WorkflowStatus.ProposalsRegistrationStarted;
-        emit ProposalsRegistrationStartedEvent();
-        emit WorkflowStatusChangeEvent(WorkflowStatus.RegisteringVoters, workflowStatus);
-    }
-
-    function endProposalsRegistration()
-        public onlyAdministrator onlyAfterProposalsRegistration {
-        workflowStatus = WorkflowStatus.ProposalsRegistrationEnded;
-        emit ProposalsRegistrationEndedEvent();
-        emit WorkflowStatusChangeEvent(WorkflowStatus.ProposalsRegistrationStarted, workflowStatus);
-    }
-
     function addCandidate (string memory _name) 
         public onlyAdministrator {
         candidatesCount ++;
         candidates[candidatesCount] = Candidate(candidatesCount, _name, 0); // initialize new Candidate struct 
         emit ProposalRegisteredEvent(candidatesCount);
     }
+
+    function startVotingSession()
+        public onlyAdministrator onlyDuringVotersRegistration {
+        workflowStatus = WorkflowStatus.VotingSessionStarted;
+        emit VotingSessionStartedEvent();
+        emit WorkflowStatusChangeEvent(WorkflowStatus.RegisteringVoters, workflowStatus);
+    } 
     
     function vote(uint _candidateId) 
-        public onlyRegisteredVoter {
+        public onlyRegisteredVoter onlyDuringVotingSession {
         require(!voters[msg.sender].hasVoted, "the caller has already voted"); // make sure voter's boolean for hasVoted is false
 
         require(_candidateId > 0 && _candidateId <= candidatesCount);
@@ -182,7 +155,7 @@ contract Election {
     }
 
     function tallyVotes()
-        public onlyAdministrator onlyAfterVotingSession {
+        public onlyAdministrator onlyDuringVotingSession {
         uint winningVoteCount = 0;
         uint winningProposalIndex = 0;
         for (uint i = 0; i < candidatesCount; i++) {
@@ -192,8 +165,8 @@ contract Election {
             }
         }
         winningCandidateId = winningProposalIndex;
-        workflowStatus = WorkflowStatus.VotesTallied;
-        emit VotesTalliedEvent();
-        emit WorkflowStatusChangeEvent(WorkflowStatus.VotingSessionEnded, workflowStatus);
+        workflowStatus = WorkflowStatus.VotingSessionEnded;
+        emit VotingSessionEndedEvent();
+        emit WorkflowStatusChangeEvent(WorkflowStatus.VotingSessionStarted, workflowStatus);
     }
 }
