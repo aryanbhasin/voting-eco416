@@ -158,7 +158,7 @@ contract Election {
         public onlyAdministrator onlyDuringVotingSession {
         uint winningVoteCount = 0;
         uint winningProposalIndex = 0;
-        for (uint i = 0; i < candidatesCount; i++) {
+        for (uint i = 0; i < candidatesCount + 1; i++) {
             if (candidates[i].voteCount > winningVoteCount) {
                 winningVoteCount = candidates[i].voteCount;
                 winningProposalIndex = i;

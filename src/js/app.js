@@ -87,6 +87,22 @@ App = {
           }
         })
       })
+    
+    App.contracts.Election.deployed()
+      .then(instance => instance.VotingSessionEndedEvent())
+      .then(votingSessionEndedEventSubscription => {
+        votingSessionEndedEvent = votingSessionEndedEventSubscription;
+        votingSessionEndedEvent.watch((error, result) => {
+          if (!error) {
+            $("#votingSessionMessage").html("The voting session has ended");
+            App.render();
+          } else {
+            console.log(error);
+          }
+        })
+      })
+
+      
   },
 
   render: function() {
@@ -104,6 +120,18 @@ App = {
         $("#accountAddress").html("logged in as: " + account);
       }
     });
+
+    App.contracts.Election.deployed()
+      .then(instance => instance.getWorkflowStatus())
+      .then(workflowStatus => {
+        if (workflowStatus == 2) {
+          return App.contracts.Election.deployed()
+            .then(instance => instance.getWinningProposalDescription())
+            .then(winningProposal => {
+              $("#winnerAnnouncement").html("Winning Proposal Is: " + winningProposal); // Need to fix this  -----> Why is winning proposal ID returning incorrect
+            })
+        }
+      });
 
     // Load contract data
     App.contracts.Election.deployed().then(function(instance) {
@@ -346,6 +374,30 @@ App = {
               } else {
                 App.contracts.Election.deployed()
                   .then(instance => instance.startVotingSession({from: App.account, gas: 200000}))
+                  .catch(e => $("#votingSessionMessage").html(e))
+              }
+            })
+        } else {
+          $("#votingSessionMessage").html("You are not logged in as an admin");
+        }
+      })
+  },
+
+  tallyVotes: function() {
+    $("#votingSessionMessage").html("");
+    var adminAddress = $("#adminAddress").val();
+    App.contracts.Election.deployed()
+      .then(instance => instance.isAdministrator(adminAddress))
+      .then(isAdministrator => {
+        if (isAdministrator) {
+          return App.contracts.Election.deployed()
+            .then(instance => instance.getWorkflowStatus())
+            .then(workflowStatus => {
+              if (workflowStatus == 2) {
+                $("#votingSessionMessage").html("The voting session has already closed");
+              } else {
+                App.contracts.Election.deployed()
+                  .then(instance => instance.tallyVotes({from: App.account, gas:200000}))
                   .catch(e => $("#votingSessionMessage").html(e))
               }
             })
