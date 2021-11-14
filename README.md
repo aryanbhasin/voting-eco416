@@ -11,7 +11,7 @@ git clone https://github.com/your_username/repository_name.git
 2. Use the package manager _npm_ to install required packages.
 
 ```bash
-npm install foobar
+npm install
 ```
 3. Download Ganache and the Metamask Chrome extension. Open Ganache and select "Quick Project"
 
