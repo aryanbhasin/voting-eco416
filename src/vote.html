@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>OpenVote</title>
+    <title>OpenVote: Voting Platform</title>
     <!-- Bootstrap -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
   </head>
@@ -12,20 +12,12 @@
     <div class="container" style="width: 650px;">
       <div class="row">
         <div class="col-lg-12">
-          <h1 class="text-center">OpenVote</h1>
+          <h1 class="text-center">OpenVote: Voting Platform</h1>
           <hr/>
           <div id="loader">
             <p class="text-center">Loading...</p>
           </div>
           <div id="content" style="display: none;">
-            <div>
-              <h5>Unlock Voter</h5>
-              <label for="voterAddress">Voter Address</label>
-              <input id="voterAddress" type="text" width="500">
-              <button onClick="App.unlockVoter()" class="btn btn-dark">Unlock</button>
-              <p id="voterUnlockedMessage"></p>
-            </div>
-            <hr />
             <table>
               <tr>
                   <td><b>Current status:&nbsp; </b></td>
@@ -33,8 +25,25 @@
               </tr>
             </table>
             <hr />
+            <div>
+              <p>To start voting:</p>
+              <ul>
+                <li><em>Step 1:</em> Make sure the voting session has begun and you see a list of proposals</li>
+                <li><em>Step 2:</em> Unlock your account by pasting in your account address below and clicking 'Unlock'</li>
+                <li><em>Step 3:</em> Choose your desires proposal from the dropdown below and press 'Vote'</li>
+                <li><em>Step 4:</em> Come back after voting has ended to view the results!</li>
+              </ul>
+            </div>
+            <hr />
+            <div>
+              <h4>Unlock Voter</h4>
+              <label for="voterAddress">Voter Address</label>
+              <input id="voterAddress" type="text" width="500">
+              <button onClick="App.unlockVoter()" class="btn btn-dark">Unlock</button>
+              <p id="voterUnlockedMessage"></p>
+            </div>
+            <hr />
             <h3 class="text-center" id="winnerAnnouncement"></h2>
-            <br/>
             <h3>Proposals</h3>
             <table class="table">
               <thead>

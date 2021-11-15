@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Voting Administrator Page</title>
+    <title>OpenVote: Admin Platform</title>
     <!-- Bootstrap -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
   </head>
@@ -12,14 +12,33 @@
     <div class="container" style="width: 800px;">
       <div class="row">
         <div class="col-lg-12">
-          <h1 class="text-center">Voting Administrator Page</h1>
+          <h1 class="text-center">OpenVote: Admin Platform</h1>
           <hr/>
           <div id="loader">
             <p class="text-center">Loading...</p>
           </div>
           <div id="content" style="display: none;">
+            <table>
+              <tr>
+                  <td><b>Current status:&nbsp; </b></td>
+                  <td id="currentWorkflowStatusMessage"></td>
+              </tr>
+            </table>
+            <hr/>
             <div>
-                <h5>Unlock Admin</h5>
+              <p>Steps to configure voting:</p>
+              <ul>
+                <li><em>Step 1:</em> Unlock your account by pasting in your account address below and clicking 'Unlock'</li>
+                <li><em>Step 2:</em> Register voters one-by-one below by pasting in their account address and clicking 'Register Voter'</li>
+                <li><em>Step 2.1:</em> To check if a voter is registered, paste in their account address under "Check registration of Voter"</li>
+                <li><em>Step 3:</em> Register the different proposals you want to vote between by typing in a description and clicking 'Register'</li>
+                <li><em>Step 4:</em> Once you've registered all voters & proposals, click "Start voting" & refresh the page to confirm the new status</li>
+                <li><em>Step 5:</em> Come back after your voters have voted on the proposal and press "End voting" to restrict further voting</li>
+              </ul>
+            </div>
+            <hr/>
+            <div>
+                <h4>1. Unlock Admin</h4>
                 <label for="adminAddress">Admin Address: </label>
                 <input id="adminAddress" type="text" width="300">
                 <!-- <label for="adminPassword">Admin Password</label>
@@ -28,15 +47,7 @@
                 <p id="adminMessage"></p>
             </div>
             <hr />
-            <table>
-                <tr>
-                    <td><b>Current status:&nbsp; </b></td>
-                    <td id="currentWorkflowStatusMessage"></td>
-                </tr>
-            </table>
-            <hr />
-            <br/>
-            <h3>Voter Registration</h3>
+            <h4>2. Voter Registration</h4>
             <div class="row">
             <div class="col-lg-6">
                 <h5>Register Voter via address:</h5>
@@ -54,7 +65,7 @@
             </div>
             <hr/>
             <div class="form-group">
-              <h3>Proposal Registration</h3>
+              <h4>3. Proposal Registration</h4>
               <textarea class="form-control" rows="2" id="proposalName"></textarea>
               <p id="proposalRegistrationMessage"></p>
               <button onclick="App.registerProposal()" class="btn btn-success">Register</button>
