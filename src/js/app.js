@@ -121,6 +121,7 @@ App = {
       }
     });
 
+    var winnerMessage = "Winning Proposal is ";
     App.contracts.Election.deployed()
       .then(instance => instance.getWorkflowStatus())
       .then(workflowStatus => {
@@ -128,7 +129,13 @@ App = {
           return App.contracts.Election.deployed()
             .then(instance => instance.getWinningProposalDescription())
             .then(winningProposal => {
-              $("#winnerAnnouncement").html("Winning Proposal Is: " + winningProposal); // Need to fix this  -----> Why is winning proposal ID returning incorrect
+              winnerMessage += "<b>" + winningProposal + "</b>";
+              return App.contracts.Election.deployed()
+                .then(instance => instance.getWinningProposalVoteCounts())
+                .then(voteCounts => {
+                  winnerMessage += " by " + voteCounts + " votes";
+                  $("#winnerAnnouncement").html(winnerMessage);
+                })
             })
         }
       });
@@ -352,7 +359,7 @@ App = {
               .then(instance => instance.addCandidate(proposalName, {from: App.account, gas: 200000}))
               .catch(e => $("#proposalRegistrationMessage").html(e))
           } else {
-            $("#proposalRegistrationMessage").html("You are not logged in as an admin");
+            $("#proposalRegistrationMessage").html("You need to unlock your account first");
           }
         })
     }
@@ -378,7 +385,7 @@ App = {
               }
             })
         } else {
-          $("#votingSessionMessage").html("You are not logged in as an admin");
+          $("#votingSessionMessage").html("You need to unlock your account first");
         }
       })
   },
@@ -396,7 +403,7 @@ App = {
               if (workflowStatus == 2) {
                 $("#votingSessionMessage").html("The voting session has already closed");
               } else {
-                App.contracts.Election.deployed()
+                return App.contracts.Election.deployed()
                   .then(instance => instance.tallyVotes({from: App.account, gas:200000}))
                   .catch(e => $("#votingSessionMessage").html(e))
               }
