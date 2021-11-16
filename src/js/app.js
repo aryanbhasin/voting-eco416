@@ -169,7 +169,7 @@ App = {
     }).then(function(voter) {
       var hasVoted = voter[1];
       if (hasVoted) {
-        $('form').hide();
+        $('#votingForm').hide();
       }
       loader.hide();
       content.show();
@@ -297,7 +297,7 @@ App = {
     var adminAddress = $("#adminAddress").val();
 
     var voterToRegister = $("#voterAddress").val();
-    console.log(web3.eth.defaultAccount);
+    var voterPower = parseInt($("#voterPower").val() ?? 1);
     App.contracts.Election.deployed()
       .then(instance => instance.isAdministrator(adminAddress))
       .then(isAdministrator => {
@@ -316,7 +316,7 @@ App = {
                     }
                     else {
                       App.contracts.Election.deployed()
-                        .then(instance => instance.registerVoter(voterToRegister, {from: App.account, gas: 200000}))
+                        .then(instance => instance.registerVoter(voterToRegister, voterPower, {from: App.account, gas: 200000}))
                         .catch(e => $("#voterRegistrationMessage").html(e))
                     }
                   })
@@ -336,7 +336,11 @@ App = {
       .then(instance => instance.isRegisteredVoter(address))
       .then(isRegisteredVoter => {
         if (isRegisteredVoter) {
-          $("#registrationVerificationMessage").html("Yes, this voter is registered");
+          App.contracts.Election.deployed()
+            .then(instance => instance.getVotingPower(address))
+            .then(votingPower => {
+              $("#registrationVerificationMessage").html("Yes, this voter is registered and is alloted " + votingPower + " votes");
+            })
         } else {
           $("#registrationVerificationMessage").html("No, this voter is NOT registered");
         }

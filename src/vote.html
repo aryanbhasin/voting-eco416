@@ -34,7 +34,7 @@
               <ul>
                 <li><em>Step 1:</em> Make sure the voting session has begun and you see a list of proposals</li>
                 <li><em>Step 2:</em> Unlock your account by pasting in your account address below and clicking 'Unlock'</li>
-                <li><em>Step 3:</em> Choose your desires proposal from the dropdown below and press 'Vote'</li>
+                <li><em>Step 3:</em> Choose your desired proposal from the dropdown below and press 'Vote'</li>
                 <li><em>Step 4:</em> Come back after voting has ended to view the results!</li>
               </ul>
             </div>
@@ -59,7 +59,7 @@
               <tbody id="candidatesResults">
               </tbody>
             </table>
-            <form onSubmit="App.castVote(); return false;">
+            <form id="votingForm" onSubmit="App.castVote(); return false;">
               <div class="form-group">
                 <label for="candidatesSelect">Select Proposal</label>
                 <select class="form-control" id="candidatesSelect">

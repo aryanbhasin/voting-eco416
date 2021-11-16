@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Election Login</title>
+    <title>OpenVote: Decentralized Voting Platform</title>
     <!-- Bootstrap -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
   </head>
@@ -12,19 +12,18 @@
     <div class="container" style="width: 650px;">
       <div class="row">
         <div class="col-lg-12">
-          <h1 class="text-center">OpenVote Login</h1>
+          <h1 class="text-center">OpenVote</h1>
+          <p class="text-center">OpenVote is a decentralized platform for voters to vote upon proposals</p>
+          <p class="text-center"><em>Built for ECO416 by Aryan, Cynthia, Helena, and Kwan</em></p>
           <hr/>
           <br/>
-          <!-- <div id="loader">
-            <p class="text-center">Loading...</p>
-          </div> -->
         </div>
       </div>
       <div id="" class="row">
         <div class="col-lg-6">
           <form onSubmit="App.loginAsVoter(); return false;">
             <div class="form-group">
-              <input type="text" id="voterLoginAddress" placeholder="Enter voter ID" class="form-control">
+              <input type="text" id="voterLoginAddress" placeholder="Enter voter address" class="form-control">
               <p id="voterLoginMessage"></p>
             </div>
             <input type="submit" value="Login as voter" class="btn btn-primary">
@@ -33,7 +32,7 @@
         <div class="col-lg-6">
           <form onSubmit="App.loginAsAdmin(); return false;">
             <div class="form-group">
-              <input type="text" id="adminLoginAddress" placeholder="Enter admin ID" class="form-control">
+              <input type="text" id="adminLoginAddress" placeholder="Enter admin address" class="form-control">
               <p id="adminLoginMessage"></p>
             </div>
             <input type="submit" value="Login as admin" class="btn">

@@ -12,6 +12,7 @@ contract Election {
         bool isRegistered;
         bool hasVoted;
         uint votedProposalId;
+        uint votingPower;
     }
     
     enum WorkflowStatus {
@@ -102,6 +103,10 @@ contract Election {
         return voters[_voterAddress].isRegistered;
     }
 
+    function getVotingPower(address _voterAddress) public view returns (uint) {
+        return voters[_voterAddress].votingPower;
+    }
+
     function isAdministrator(address _address) public view returns (bool) {
         return (_address == administrator);
     }
@@ -116,12 +121,13 @@ contract Election {
         workflowStatus = WorkflowStatus.RegisteringVoters;
     }
 
-    function registerVoter(address _voterAddress) public onlyAdministrator onlyDuringVotersRegistration {
+    function registerVoter(address _voterAddress, uint _voterPower) public onlyAdministrator onlyDuringVotersRegistration {
         require(!voters[_voterAddress].isRegistered, "the voter is already registered!");
 
         voters[_voterAddress].isRegistered = true;
         voters[_voterAddress].hasVoted = false;
         voters[_voterAddress].votedProposalId = 0;
+        voters[_voterAddress].votingPower = _voterPower;
         
         emit VoterRegisteredEvent(_voterAddress);
     }
@@ -149,7 +155,7 @@ contract Election {
         voters[msg.sender].hasVoted = true;
         voters[msg.sender].votedProposalId = _candidateId;
 
-        candidates[_candidateId].voteCount ++;
+        candidates[_candidateId].voteCount += voters[msg.sender].votingPower;
 
         emit votedEvent(_candidateId);
     }
