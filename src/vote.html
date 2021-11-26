@@ -24,7 +24,7 @@
             <table>
               <tr>
                   <td><b>Current status:&nbsp; </b></td>
-                  <td id="currentWorkflowStatusMessage"></td>
+                  <td><span class="badge bg-success" id="currentWorkflowStatusMessage"></span></td>
               </tr>
             </table>
             <h5 class="" id="winnerAnnouncement"></h5>
@@ -40,8 +40,8 @@
             </div>
             <hr />
             <div>
-              <h4>Unlock Voter</h4>
-              <label for="voterAddress">Voter Address</label>
+              <h4>Voter Verification</h4>
+              <label for="voterAddress">Voter Address:</label>
               <input id="voterAddress" type="text" width="500">
               <button onClick="App.unlockVoter()" class="btn btn-dark">Unlock</button>
               <p id="voterUnlockedMessage"></p>
@@ -53,6 +53,7 @@
                 <tr>
                   <th scope="col">#</th>
                   <th scope="col">Name</th>
+                  <th scope="col">Cost</th>
                   <th scope="col">Votes</th>
                 </tr>
               </thead>

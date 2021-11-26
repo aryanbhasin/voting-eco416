@@ -29,6 +29,7 @@ App = {
 
       App.listenForEvents();
       App.refreshWorkflowStatus();
+      App.refreshNetFund();
 
       return App.render();
     });
@@ -102,6 +103,19 @@ App = {
         })
       })
 
+    App.contracts.Election.deployed()
+    .then(instance => instance.NetFundChangeEvent())
+    .then(netFundChangeEventSubscription => {
+        netFundChangeEvent = netFundChangeEventSubscription;
+        netFundChangeEvent.watch((error, _) => {
+          if (!error) {
+            refreshNetFund();
+          }
+          else {
+            console.log(error);
+          }
+        })
+    });
       
   },
 
@@ -155,13 +169,14 @@ App = {
         electionInstance.candidates(i).then(function(candidate) {
           var id = candidate[0];
           var name = candidate[1];
-          var voteCount = candidate[2];
+          var cost = candidate[2];
+          var voteCount = candidate[3];
           // Render candidate Result
-          var candidateTemplate = "<tr><th>" + id + "</th><td>" + name + "</td><td>" + voteCount + "</td></tr>"
+          var candidateTemplate = "<tr><th>" + id + "</th><td>" + name + "</td><td>$" + cost + "</td><td>" + voteCount + "</td></tr>"
           candidatesResults.append(candidateTemplate);
 
           // Render candidate ballot option
-          var candidateOption = "<option value='" + id + "' >" + name + "</option"
+          var candidateOption = "<option value='" + id + "' >" + name + " ($" + cost + ")</option>"
           candidatesSelect.append(candidateOption);
         });
       }
@@ -195,6 +210,8 @@ App = {
   castVote: function() {
     var candidateId = $('#candidatesSelect').val();
     var voterAddress = $("#voterAddress").val();
+    console.log(candidateId,voterAddress);
+    // return;
     App.contracts.Election.deployed()
       .then(instance => instance.isRegisteredVoter(voterAddress))
       .then(isRegisteredVoter => {
@@ -351,16 +368,22 @@ App = {
     $("#proposalRegistrationMessage").html('');
     var adminAddress = $("#adminAddress").val();
     var proposalName = $("#proposalName").val();
+    var proposalCost = $("#proposalCost").val();
 
-    if (proposalName.length == 0) {
-      $("#proposalRegistrationMessage").html("No proposal name entered");
+    if (proposalName.length == 0 || isNaN(proposalCost)) {
+      if (proposalName.length == 0) {
+        $("#proposalRegistrationMessage").html("No proposal name entered");
+      }
+      if (isNaN(proposalCost)) {
+        $("#proposalRegistrationMessage2").html("Cost must be number");
+      }
     } else {
       App.contracts.Election.deployed()
         .then(instance => instance.isAdministrator(adminAddress))
         .then(isAdministrator => {
           if (isAdministrator) {
             App.contracts.Election.deployed()
-              .then(instance => instance.addCandidate(proposalName, {from: App.account, gas: 200000}))
+              .then(instance => instance.addCandidate(proposalName, proposalCost, {from: App.account, gas: 200000}))
               .catch(e => $("#proposalRegistrationMessage").html(e))
           } else {
             $("#proposalRegistrationMessage").html("You need to unlock your account first");
@@ -440,7 +463,35 @@ App = {
 
         $("#currentWorkflowStatusMessage").html(workflowStatusDescription);
       })
+  },
+
+  // {
+  //   return [instance.getInitialFund(), instance.getUsedFund()];
+  // }
+  refreshNetFund: function() {
+    console.log('Hello: updating fund');
+    var usedFund;
+    App.contracts.Election.deployed()
+      .then(instance => {
+        electionInstance = instance;
+        return electionInstance.fund();
+      })
+      .then(fund => {
+        var initialFund = fund[0].c[0];
+        var usedFund = fund[1].c[0];
+        var netFund = initialFund-usedFund;
+        var ratio = usedFund * 100/initialFund;
+
+        var bar = "<div class='progress-bar' role='progressbar' id='progressbar' style='width: "+ ratio + "%;' aria-valuenow='" + ratio + "' aria-valuemin='0' aria-valuemax='100'>" + ratio + "%</div>";
+
+        $("#currentFunded").html(initialFund);
+        $("#currentUsedFund").html(usedFund);
+        $("#netFund").html(netFund);
+        $("#progressbar").html(bar);
+      })
   }
+
+
 };
 
 $(function() {

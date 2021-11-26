@@ -5,6 +5,7 @@ contract Election {
     struct Candidate {
         uint id;
         string name;
+        uint cost;
         uint voteCount;
     }
 
@@ -21,9 +22,27 @@ contract Election {
         VotingSessionEnded
     }
 
+    struct Fund {
+        uint crowdfundedInitialFund;
+        uint crowdfundedUsedFund;
+    }
+
     address public administrator;
 
     WorkflowStatus public workflowStatus;
+
+    // Store Crowdfunded Fund
+    Fund public fund;
+    // uint public crowdfundedInitialFund;
+    // uint public crowdfundedUsedFund;
+
+    // Round counter
+    // uint private _round;
+    // mapping(uint => mapping(address => Voter)) private voters;
+    // mapping(uint => mapping(uint => Candidate)) private candidates;
+    // mapping(uint => uint) public candidatesCount;
+    // mapping(uint => uint) private winningCandidateId;
+    // _round += 1
 
     // Store accounts that have voted
     mapping(address => Voter) public voters;
@@ -51,6 +70,8 @@ contract Election {
         WorkflowStatus previousStatus,
         WorkflowStatus newStatus
     );
+
+    event NetFundChangeEvent ();
 
     // ----------------- MODIFIERS -----------------
     modifier onlyAdministrator() {
@@ -84,6 +105,10 @@ contract Election {
         return candidates[index].name;
     }
 
+    function getProposalCost(uint index) public view returns (uint) {
+        return candidates[index].cost;
+    }
+
     function getWinningProposalId() 
         public onlyAfterVotingSession view returns (uint) {
         return winningCandidateId;
@@ -92,6 +117,10 @@ contract Election {
     function getWinningProposalDescription()
         public onlyAfterVotingSession view returns (string memory) {
         return candidates[winningCandidateId].name;    
+    }
+
+    function getWinningProposalCost() public onlyAfterVotingSession view returns (uint) {
+        return candidates[winningCandidateId].cost;
     }
 
     function getWinningProposalVoteCounts()
@@ -115,9 +144,33 @@ contract Election {
         return workflowStatus;
     }
 
+    // function getCrowdfundedInitialFund() public view returns (uint) {
+    //     return fund.crowdfundedInitialFund;
+    // }
+
+    // function getCrowdfundedUsedFund() public view returns (uint) {
+    //     return fund.crowdfundedUsedFund;
+    // }
+
+    // function getFund() public view returns (Fund) {
+    //     return fund;
+    // }
+
+    // function getInitialFund() public view returns (uint) {
+    //     return crowdfundedInitialFund;
+    // }
+
+    // function getUsedFund() public view returns (uint) {
+    //     return crowdfundedUsedFund;
+    // }
+
+    // function getFundsInfo() public view returns()
+
     // ----------------- Constructor -----------------
     constructor() public {
         administrator = msg.sender;
+        // crowdfundedInitialFund = 1000;
+        fund = Fund(1000,0);
         workflowStatus = WorkflowStatus.RegisteringVoters;
     }
 
@@ -132,22 +185,20 @@ contract Election {
         emit VoterRegisteredEvent(_voterAddress);
     }
 
-    function addCandidate (string memory _name) 
-        public onlyAdministrator {
+    function addCandidate (string memory _name, uint _cost) public onlyAdministrator {
         candidatesCount ++;
-        candidates[candidatesCount] = Candidate(candidatesCount, _name, 0); // initialize new Candidate struct 
+        // candidates[candidatesCount] = Candidate(candidatesCount, _name, _cost, 0); 
+        candidates[candidatesCount] = Candidate(candidatesCount, _name, _cost, 0); // initialize new Candidate struct 
         emit ProposalRegisteredEvent(candidatesCount);
     }
 
-    function startVotingSession()
-        public onlyAdministrator onlyDuringVotersRegistration {
+    function startVotingSession() public onlyAdministrator onlyDuringVotersRegistration {
         workflowStatus = WorkflowStatus.VotingSessionStarted;
         emit VotingSessionStartedEvent();
         emit WorkflowStatusChangeEvent(WorkflowStatus.RegisteringVoters, workflowStatus);
     } 
     
-    function vote(uint _candidateId) 
-        public onlyRegisteredVoter onlyDuringVotingSession {
+    function vote(uint _candidateId) public onlyRegisteredVoter onlyDuringVotingSession {
         require(!voters[msg.sender].hasVoted, "the caller has already voted"); // make sure voter's boolean for hasVoted is false
 
         require(_candidateId > 0 && _candidateId <= candidatesCount);
@@ -160,8 +211,7 @@ contract Election {
         emit votedEvent(_candidateId);
     }
 
-    function tallyVotes()
-        public onlyAdministrator onlyDuringVotingSession {
+    function tallyVotes() public onlyAdministrator onlyDuringVotingSession {
         uint winningVoteCount = 0;
         uint winningProposalIndex = 0;
         for (uint i = 0; i < candidatesCount + 1; i++) {
@@ -172,7 +222,20 @@ contract Election {
         }
         winningCandidateId = winningProposalIndex;
         workflowStatus = WorkflowStatus.VotingSessionEnded;
+
+        // crowdfundedUsedFund = crowdfundedUsedFund + candidates[winningProposalIndex].cost;
+
+        fund.crowdfundedUsedFund += candidates[winningProposalIndex].cost;
+
         emit VotingSessionEndedEvent();
         emit WorkflowStatusChangeEvent(WorkflowStatus.VotingSessionStarted, workflowStatus);
+        emit NetFundChangeEvent();
     }
+
+    // function reset() public onlyAdministrator onlyAfterVotingSession {
+    //     voters = new mapping();
+    //     candidates = new mapping();
+    //     candidatesCount = 0;
+    //     winningCandidateId = 0;
+    // }
 }
