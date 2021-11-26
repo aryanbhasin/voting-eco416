@@ -33,16 +33,6 @@ contract Election {
 
     // Store Crowdfunded Fund
     Fund public fund;
-    // uint public crowdfundedInitialFund;
-    // uint public crowdfundedUsedFund;
-
-    // Round counter
-    // uint private _round;
-    // mapping(uint => mapping(address => Voter)) private voters;
-    // mapping(uint => mapping(uint => Candidate)) private candidates;
-    // mapping(uint => uint) public candidatesCount;
-    // mapping(uint => uint) private winningCandidateId;
-    // _round += 1
 
     // Store accounts that have voted
     mapping(address => Voter) public voters;
@@ -144,28 +134,6 @@ contract Election {
         return workflowStatus;
     }
 
-    // function getCrowdfundedInitialFund() public view returns (uint) {
-    //     return fund.crowdfundedInitialFund;
-    // }
-
-    // function getCrowdfundedUsedFund() public view returns (uint) {
-    //     return fund.crowdfundedUsedFund;
-    // }
-
-    // function getFund() public view returns (Fund) {
-    //     return fund;
-    // }
-
-    // function getInitialFund() public view returns (uint) {
-    //     return crowdfundedInitialFund;
-    // }
-
-    // function getUsedFund() public view returns (uint) {
-    //     return crowdfundedUsedFund;
-    // }
-
-    // function getFundsInfo() public view returns()
-
     // ----------------- Constructor -----------------
     constructor() public {
         administrator = msg.sender;
@@ -187,7 +155,6 @@ contract Election {
 
     function addCandidate (string memory _name, uint _cost) public onlyAdministrator {
         candidatesCount ++;
-        // candidates[candidatesCount] = Candidate(candidatesCount, _name, _cost, 0); 
         candidates[candidatesCount] = Candidate(candidatesCount, _name, _cost, 0); // initialize new Candidate struct 
         emit ProposalRegisteredEvent(candidatesCount);
     }
@@ -223,19 +190,10 @@ contract Election {
         winningCandidateId = winningProposalIndex;
         workflowStatus = WorkflowStatus.VotingSessionEnded;
 
-        // crowdfundedUsedFund = crowdfundedUsedFund + candidates[winningProposalIndex].cost;
-
         fund.crowdfundedUsedFund += candidates[winningProposalIndex].cost;
 
         emit VotingSessionEndedEvent();
         emit WorkflowStatusChangeEvent(WorkflowStatus.VotingSessionStarted, workflowStatus);
         emit NetFundChangeEvent();
     }
-
-    // function reset() public onlyAdministrator onlyAfterVotingSession {
-    //     voters = new mapping();
-    //     candidates = new mapping();
-    //     candidatesCount = 0;
-    //     winningCandidateId = 0;
-    // }
 }

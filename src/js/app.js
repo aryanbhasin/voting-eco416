@@ -465,9 +465,6 @@ App = {
       })
   },
 
-  // {
-  //   return [instance.getInitialFund(), instance.getUsedFund()];
-  // }
   refreshNetFund: function() {
     console.log('Hello: updating fund');
     var usedFund;
