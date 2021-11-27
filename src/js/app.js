@@ -210,8 +210,7 @@ App = {
   castVote: function() {
     var candidateId = $('#candidatesSelect').val();
     var voterAddress = $("#voterAddress").val();
-    console.log(candidateId,voterAddress);
-    // return;
+
     App.contracts.Election.deployed()
       .then(instance => instance.isRegisteredVoter(voterAddress))
       .then(isRegisteredVoter => {
